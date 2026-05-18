@@ -10,7 +10,7 @@ import java.util.UUID;
 
 /**
  * Service layer for User management.
- * Contains business logic for registration, login, and profile management.
+ * Contains business logic for registration, login, and profile management .
  */
 @Service
 public class UserService {
