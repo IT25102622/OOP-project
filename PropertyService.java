@@ -1,55 +1,52 @@
 package com.realestate.service;
 
 import com.realestate.model.Property;
+import com.realestate.repository.PropertyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 
+/**
+ * Service layer for Property management.
+ */
+@Service
 public class PropertyService {
 
-    private static final String FILE = "data/properties.txt";
+    @Autowired
+    private PropertyRepository propertyRepository;
 
-    // CREATE (Add Property)
-    public static void addProperty(Property p) throws IOException {
-        FileWriter fw = new FileWriter(FILE, true);
-        fw.write(p.toFileFormat() + "\n");
-        fw.close();
+    // For backward compatibility with static calls if any
+    private static PropertyRepository staticRepo;
+    
+    @Autowired
+    public void setStaticRepo(PropertyRepository repo) {
+        PropertyService.staticRepo = repo;
     }
 
-    // READ (View All Properties)
     public static List<Property> getAll() throws IOException {
-        List<Property> list = new ArrayList<>();
-        BufferedReader br = new BufferedReader(new FileReader(FILE));
-        String line;
-
-        while ((line = br.readLine()) != null) {
-            String[] d = line.split(",");
-            list.add(
-                    new Property(
-                            d[0],
-                            d[1],
-                            d[2],
-                            Double.parseDouble(d[3]),
-                            d[4],
-                            Integer.parseInt(d[5])
-                    )
-            );
-        }
-        br.close();
-        return list;
+        return staticRepo.findAll();
     }
 
-    // DELETE (Remove Property)
-    public static void delete(String id) throws IOException {
-        List<Property> props = getAll();
-        FileWriter fw = new FileWriter(FILE);
+    public static void addProperty(Property p) throws IOException {
+        staticRepo.save(p);
+    }
 
-        for (Property p : props) {
-            if (!p.getId().equals(id)) {
-                fw.write(p.toFileFormat() + "\n");
-            }
-        }
-        fw.close();
+    public static void delete(String id) throws IOException {
+        staticRepo.deleteById(id);
+    }
+    
+    // Instance methods for modern Spring usage
+    public List<Property> findAllProperties() {
+        return propertyRepository.findAll();
+    }
+    
+    public void saveProperty(Property property) {
+        propertyRepository.save(property);
+    }
+    
+    public void removeProperty(String id) {
+        propertyRepository.deleteById(id);
     }
 }
