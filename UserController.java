@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * Controller for User related actions.
- * Handles registration, login, profile view, and management.
+ * Handles registration, login, profile view, and management .
  */
 @Controller
 @RequestMapping("/users")
