@@ -1,37 +1,61 @@
 package com.realestate.service;
 
 import com.realestate.model.User;
-import java.sql.*;
+import com.realestate.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Service layer for User management.
+ * Contains business logic for registration, login, and profile management.
+ */
+@Service
 public class UserService {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/realestate_db";
-    private static final String USER = "root";
-    private static final String PASS = "password";
+    @Autowired
+    private UserRepository userRepository;
 
-    public static boolean register(User user) throws Exception {
-        Connection con = DriverManager.getConnection(URL, USER, PASS);
-        PreparedStatement ps =
-                con.prepareStatement("INSERT INTO users(username, password) VALUES (?, ?)");
-
-        ps.setString(1, user.getUsername());
-        ps.setString(2, user.getPassword());
-        ps.executeUpdate();
-        con.close();
+    public boolean register(User user) {
+        if (userRepository.findByEmail(user.getEmail()) != null) {
+            return false; // Email already registered
+        }
+        // Generate unique ID if not present
+        if (user.getUserId() == null || user.getUserId().isEmpty()) {
+            user.setUserId(UUID.randomUUID().toString().substring(0, 8));
+        }
+        userRepository.save(user);
         return true;
     }
 
-    public static boolean login(String username, String password) throws Exception {
-        Connection con = DriverManager.getConnection(URL, USER, PASS);
-        PreparedStatement ps =
-                con.prepareStatement("SELECT * FROM users WHERE username=? AND password=?");
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        return null;
+    }
 
-        ps.setString(1, username);
-        ps.setString(2, password);
-        ResultSet rs = ps.executeQuery();
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
-        boolean exists = rs.next();
-        con.close();
-        return exists;
+    public User getUserById(String id) {
+        return userRepository.findById(id);
+    }
+
+    public void updateUser(User user) {
+        userRepository.save(user);
+    }
+
+    public void deleteUser(String id) {
+        userRepository.deleteById(id);
+    }
+    
+    public boolean validatePassword(String password) {
+        // Simple validation: at least 6 characters
+        return password != null && password.length() >= 6;
     }
 }
