@@ -2,7 +2,7 @@ package com.realestate.model;
 
 /**
  * Model class for User
- * Represents a customer (Buyer/Seller) in the system.
+ * Represents a customer (Buyer/Seller) in the system .
  */
 public class User {
     private String userId;
